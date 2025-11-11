@@ -90,4 +90,74 @@ class MazeEditorGUI:
             self.labirinto[row][col] = 'E'
             self.canvas.itemconfig(self.grid_cells[row][col], fill='red')
 
-    
+    def iniciar_busca(self):
+        if not self.inicio_pos or not self.fim_pos:
+            return
+        self.desabilitar_edicao()
+        self.fila.clear()
+        self.visitados.clear()
+        self.predecessores = {}
+        self.fila.append(self.inicio_pos)
+        self.visitados.add(self.inicio_pos)
+
+        self.processar_passo_bfs()
+
+    def processar_passo_bfs(self):
+        if not self.fila:
+            print("Caminho não encontrado")
+            return
+
+        current_pos = self.fila.popleft()
+        row, col = current_pos
+
+        if current_pos == self.fim_pos:
+            self.reconstruir_caminho()
+            return
+
+        self.canvas.itemconfig(self.grid_cells[row][col], fill='blue')
+
+        vizinhos = self.obter_vizinhos(row, col)
+        for vizinho in vizinhos:
+            if vizinho not in self.visitados:
+                self.visitados.add(vizinho)
+                self.predecessores[vizinho] = current_pos
+                self.fila.append(vizinho)
+                r, c = vizinho
+                self.canvas.itemconfig(self.grid_cells[r][c], fill='yellow')
+
+        self.job_after = self.root.after(100, self.processar_passo_bfs)
+
+    def obter_vizinhos(self, row, col):
+        vizinhos = []
+        if row > 0 and self.labirinto[row - 1][col] != '#':  # Cima
+            vizinhos.append((row - 1, col))
+        if row < 19 and self.labirinto[row + 1][col] != '#':  # Baixo
+            vizinhos.append((row + 1, col))
+        if col > 0 and self.labirinto[row][col - 1] != '#':  # Esquerda
+            vizinhos.append((row, col - 1))
+        if col < 29 and self.labirinto[row][col + 1] != '#':  # Direita
+            vizinhos.append((row, col + 1))
+        return vizinhos
+
+    def reconstruir_caminho(self):
+        path = []
+        current_pos = self.fim_pos
+        while current_pos != self.inicio_pos:
+            path.append(current_pos)
+            current_pos = self.predecessores[current_pos]
+        path.append(self.inicio_pos)
+        path.reverse()
+
+        for pos in path:
+            row, col = pos
+            self.canvas.itemconfig(self.grid_cells[row][col], fill='gold')
+
+    def resetar_busca(self):
+        for i in range(20):
+            for j in range(30):
+                if self.labirinto[i][j] == ' ':
+                    self.canvas.itemconfig(self.grid_cells[i][j], fill='white')
+                elif self.labirinto[i][j] == 'S':
+                    self.canvas.itemconfig(self.grid_cells[i][j], fill='green')
+                elif self.labirinto[i][j] == 'E':
+                    self.canvas.itemconfig(self.grid_cells[i][j], fill='red')
