@@ -161,3 +161,15 @@ class MazeEditorGUI:
                     self.canvas.itemconfig(self.grid_cells[i][j], fill='green')
                 elif self.labirinto[i][j] == 'E':
                     self.canvas.itemconfig(self.grid_cells[i][j], fill='red')
+
+    def limpar_labirinto(self):
+        self.labirinto = [[' ' for _ in range(30)] for _ in range(20)]
+        self.inicio_pos = None
+        self.fim_pos = None
+        self.resetar_busca()
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = MazeEditorGUI(root)
+    root.mainloop()
